@@ -98,7 +98,7 @@ struct StringConfigItem : public ConfigItem<String> {
 	{}
 
 	virtual void fromString(const String &s) { value = s; }
-	virtual String toJSON(bool bare = false) const { return "\"" + value + "\""; }
+	virtual String toJSON(bool bare = false) const;
 	virtual void put() const;
 	virtual BaseConfigItem& get();
 	StringConfigItem& operator=(const String &val) { value = val; return *this; }
