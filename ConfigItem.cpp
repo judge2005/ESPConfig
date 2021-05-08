@@ -6,6 +6,7 @@
  */
 
 #include <ConfigItem.h>
+#ifdef notdef
 #include <sstream>
 #include <iomanip>
 
@@ -33,6 +34,36 @@ String escape_json(const std::string &s) {
     o << "\"";
     return o.str().c_str();
 }
+#else
+String escape_json(const String &s) {
+    String ret("\"");
+    ret.reserve(s.length() + 10);
+    const char *start = s.c_str();
+    const char *end = start + strlen(s.c_str());
+    for (const char *c = start; c != end; c++) {
+        switch (*c) {
+        case '"': ret += "\\\""; break;
+        case '\\': ret += "\\\\"; break;
+        case '\b': ret += "\\b"; break;
+        case '\f': ret += "\\f"; break;
+        case '\n': ret += "\\n"; break;
+        case '\r': ret += "\\r"; break;
+        case '\t': ret += "\\t"; break;
+        default:
+            if ('\x00' <= *c && *c <= '\x1f') {
+            	char buf[10];
+            	sprintf(buf, "\\u%04x", (int)*c);
+                ret += buf;
+            } else {
+                ret += *c;
+            }
+        }
+    }
+    ret += "\"";
+
+	return ret;
+}
+#endif
 
 template <class T>
 void ConfigItem<T>::debug(Print *debugPrint) const {
@@ -81,7 +112,7 @@ BaseConfigItem& StringConfigItem::get() {
 
  String StringConfigItem::toJSON(bool bare) const
 {
-	return escape_json(value.c_str());
+	return escape_json(value);
 }
 
 void CompositeConfigItem::debug(Print *debugPrint) const {
