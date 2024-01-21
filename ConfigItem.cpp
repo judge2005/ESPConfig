@@ -110,7 +110,7 @@ BaseConfigItem& StringConfigItem::get() {
 	return *this;
 }
 
- String StringConfigItem::toJSON(bool bare) const
+ String StringConfigItem::toJSON(bool bare, const char **excludes) const
 {
 	return escape_json(value);
 }
@@ -129,7 +129,7 @@ void CompositeConfigItem::debug(Print *debugPrint) const {
 	}
 }
 
-String CompositeConfigItem::toJSON(bool bare) const {
+String CompositeConfigItem::toJSON(bool bare, const char **excludes) const {
 	String json;
 	json.reserve(200);
 
@@ -138,13 +138,21 @@ String CompositeConfigItem::toJSON(bool bare) const {
 	}
 	char *sep = "";
 	for (int i=0; value[i] != 0; i++) {
-		json.concat(sep);
-		json.concat("\"");
-		json.concat(value[i]->name);
-		json.concat("\"");
-		json.concat(":");
-		json.concat(value[i]->toJSON());
-		sep = ",";
+		bool exclude = false;
+		for (int j=0; excludes != 0 && excludes[j] != 0; j++) {
+			if (strcmp(value[i]->name, excludes[j]) == 0) {
+				exclude = true;
+			}
+		}
+		if (!exclude) {
+			json.concat(sep);
+			json.concat("\"");
+			json.concat(value[i]->name);
+			json.concat("\"");
+			json.concat(":");
+			json.concat(value[i]->toJSON());
+			sep = ",";
+		}
 	}
 	if (!bare) {
 		json.concat("}");

@@ -42,6 +42,7 @@ struct BaseConfigItem {
 	virtual void put() const = 0;
 	virtual BaseConfigItem& get() = 0;
 	virtual String toJSON(bool bare = false) const = 0;
+	virtual void notify() = 0;
 	virtual void debug(Print *debugPrint) const = 0;
 	const char *name;
 	byte maxSize;
@@ -60,6 +61,10 @@ struct ConfigItem : public BaseConfigItem {
 	virtual BaseConfigItem& get() { EEPROM.get(start, value); return *this; }
 	virtual void debug(Print *debugPrint) const;
 	operator T () const { return value; }
+	virtual void notify() { if (cb) cb(*this); }
+	void setCallback(void (*cb)(ConfigItem<T>&)) { this->cb = cb; }
+
+	void (*cb)(ConfigItem<T>&) = 0;
 };
 
 struct BooleanConfigItem : public ConfigItem<bool> {
@@ -97,11 +102,11 @@ struct StringConfigItem : public ConfigItem<String> {
 	: ConfigItem(name, maxSize, value)
 	{}
 
-	virtual void fromString(const String &s) { value = s; }
+	virtual void fromString(const String &s) { value = s.substring(0, maxSize); }
 	virtual String toJSON(bool bare = false) const;
 	virtual void put() const;
 	virtual BaseConfigItem& get();
-	StringConfigItem& operator=(const String &val) { value = val; return *this; }
+	StringConfigItem& operator=(const String &val) { value = val.substring(0, maxSize); return *this; }
 };
 
 /**
@@ -124,6 +129,11 @@ struct CompositeConfigItem : public BaseConfigItem {
 	virtual BaseConfigItem& get();
 	CompositeConfigItem& operator=(BaseConfigItem** val) { value = val; return *this; }
 	virtual void debug(Print *debugPrint) const;
+
+	virtual void notify() { if (cb) cb(*this); }
+	void setCallback(void (*cb)(CompositeConfigItem&)) { this->cb = cb; }
+
+	void (*cb)(CompositeConfigItem&) = 0;
 };
 
 #endif /* LIBRARIES_CONFIGS_CONFIGITEM_H_ */
