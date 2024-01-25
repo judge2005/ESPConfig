@@ -41,7 +41,7 @@ struct BaseConfigItem {
 	virtual void fromString(const String &s) = 0;
 	virtual void put() const = 0;
 	virtual BaseConfigItem& get() = 0;
-	virtual String toJSON(bool bare = false) const = 0;
+	virtual String toJSON(bool bare = false, const char **excludes = 0) const = 0;
 	virtual void notify() = 0;
 	virtual void debug(Print *debugPrint) const = 0;
 	const char *name;
@@ -73,7 +73,7 @@ struct BooleanConfigItem : public ConfigItem<bool> {
 	{}
 
 	virtual void fromString(const String &s) { value = s.equalsIgnoreCase("true") ? 1 : 0; }
-	virtual String toJSON(bool bare = false) const { return value ? "true" : "false"; }
+	virtual String toJSON(bool bare = false, const char **excludes = 0) const { return value ? "true" : "false"; }
 	BooleanConfigItem& operator=(const bool val) { value = val; return *this; }
 };
 
@@ -83,7 +83,7 @@ struct ByteConfigItem : public ConfigItem<byte> {
 	{}
 
 	virtual void fromString(const String &s) { value = s.toInt(); }
-	virtual String toJSON(bool bare = false) const { return String(value); }
+	virtual String toJSON(bool bare = false, const char **excludes = 0) const { return String(value); }
 	ByteConfigItem& operator=(const byte val) { value = val; return *this; }
 };
 
@@ -93,7 +93,7 @@ struct IntConfigItem : public ConfigItem<int> {
 	{}
 
 	virtual void fromString(const String &s) { value = s.toInt(); }
-	virtual String toJSON(bool bare = false) const { return String(value); }
+	virtual String toJSON(bool bare = false, const char **excludes = 0) const { return String(value); }
 	IntConfigItem& operator=(const int val) { value = val; return *this; }
 };
 
@@ -103,7 +103,7 @@ struct StringConfigItem : public ConfigItem<String> {
 	{}
 
 	virtual void fromString(const String &s) { value = s.substring(0, maxSize); }
-	virtual String toJSON(bool bare = false) const;
+	virtual String toJSON(bool bare = false, const char **excludes = 0) const;
 	virtual void put() const;
 	virtual BaseConfigItem& get();
 	StringConfigItem& operator=(const String &val) { value = val.substring(0, maxSize); return *this; }
@@ -124,7 +124,7 @@ struct CompositeConfigItem : public BaseConfigItem {
 	virtual unsigned int getChecksum(int index);
 
 	virtual void fromString(const String &s) {  }
-	virtual String toJSON(bool bare = false) const;
+	virtual String toJSON(bool bare = false, const char **excludes = 0) const;
 	virtual void put() const;
 	virtual BaseConfigItem& get();
 	CompositeConfigItem& operator=(BaseConfigItem** val) { value = val; return *this; }
