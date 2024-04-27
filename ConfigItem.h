@@ -43,6 +43,7 @@ struct BaseConfigItem {
 	virtual BaseConfigItem& get() = 0;
 	virtual String toJSON(bool bare = false, const char **excludes = 0) const = 0;
 	virtual void notify() = 0;
+    virtual void forEach(std::function<void(BaseConfigItem&)>, bool recurse=true) = 0;
 	virtual void debug(Print *debugPrint) const = 0;
 	const char *name;
 	byte maxSize;
@@ -62,6 +63,7 @@ struct ConfigItem : public BaseConfigItem {
 	virtual void debug(Print *debugPrint) const;
 	operator T () const { return value; }
 	virtual void notify() { if (cb) cb(*this); }
+    virtual void forEach(std::function<void(BaseConfigItem&)> pFunc, bool recurse=true) { pFunc(*this); };
 	void setCallback(void (*cb)(ConfigItem<T>&)) { this->cb = cb; }
 
 	void (*cb)(ConfigItem<T>&) = 0;
@@ -131,6 +133,7 @@ struct CompositeConfigItem : public BaseConfigItem {
 	virtual void debug(Print *debugPrint) const;
 
 	virtual void notify() { if (cb) cb(*this); }
+    virtual void forEach(std::function<void(BaseConfigItem&)>, bool recurse=true);
 	void setCallback(void (*cb)(CompositeConfigItem&)) { this->cb = cb; }
 
 	void (*cb)(CompositeConfigItem&) = 0;

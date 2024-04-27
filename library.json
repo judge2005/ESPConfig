@@ -1,0 +1,13 @@
+{
+  "name": "ESPConfig",
+  "keywords": "esp8266,espressif32,espressif8266,esp32,configuration,config",
+  "description": "ESP8266 and ESP32 configuration library",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/judge2005/ESPConfig.git"
+  },
+  "frameworks": "arduino",
+  "platforms": ["espressif8266", "espressif32"],
+  "version": "1.1.0"
+}

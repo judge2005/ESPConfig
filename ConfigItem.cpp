@@ -161,6 +161,16 @@ String CompositeConfigItem::toJSON(bool bare, const char **excludes) const {
 	return json;
 }
 
+void CompositeConfigItem::forEach(std::function<void(BaseConfigItem&)> pFunc, bool recurse) {
+	for (int i=0; value[i] != 0; i++) {
+		if (recurse) {
+			value[i]->forEach(pFunc, recurse);
+		} else {
+			pFunc(*(value[i]));
+		}
+	}
+}
+
 void CompositeConfigItem::put() const {
 	for (int i=0; value[i] != 0; i++) {
 		value[i]->put();
