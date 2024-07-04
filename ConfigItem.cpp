@@ -80,6 +80,7 @@ void ConfigItem<T>::debug(Print *debugPrint) const {
 template void ConfigItem<byte>::debug(Print *debugPrint) const;
 template void ConfigItem<bool>::debug(Print *debugPrint) const;
 template void ConfigItem<int>::debug(Print *debugPrint) const;
+template void ConfigItem<float>::debug(Print *debugPrint) const;
 template void ConfigItem<String>::debug(Print *debugPrint) const;
 
 void StringConfigItem::put() const {
@@ -96,7 +97,7 @@ void StringConfigItem::put() const {
 
 BaseConfigItem& StringConfigItem::get() {
 	value = String();
-	value.reserve(maxSize+1);
+	value.reserve(maxSize);
 	int end = start + maxSize;
 	for (int i = start; i < end; i++) {
 		byte readByte = EEPROM.read(i);
@@ -110,7 +111,7 @@ BaseConfigItem& StringConfigItem::get() {
 	return *this;
 }
 
- String StringConfigItem::toJSON(bool bare, const char **excludes) const
+String StringConfigItem::toJSON(bool bare, const char **excludes) const
 {
 	return escape_json(value);
 }
@@ -171,6 +172,11 @@ void CompositeConfigItem::forEach(std::function<void(BaseConfigItem&)> pFunc, bo
 	}
 }
 
+// This is not a good idea, just return the JSON representation
+String CompositeConfigItem::toString(const char **excludes) const {
+        return toJSON(false, excludes);
+}           
+                
 void CompositeConfigItem::put() const {
 	for (int i=0; value[i] != 0; i++) {
 		value[i]->put();

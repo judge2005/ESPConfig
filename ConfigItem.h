@@ -42,6 +42,7 @@ struct BaseConfigItem {
 	virtual void put() const = 0;
 	virtual BaseConfigItem& get() = 0;
 	virtual String toJSON(bool bare = false, const char **excludes = 0) const = 0;
+	virtual String toString(const char **excludes = 0) const = 0;
 	virtual void notify() = 0;
     virtual void forEach(std::function<void(BaseConfigItem&)>, bool recurse=true) = 0;
 	virtual void debug(Print *debugPrint) const = 0;
@@ -76,6 +77,7 @@ struct BooleanConfigItem : public ConfigItem<bool> {
 
 	virtual void fromString(const String &s) { value = s.equalsIgnoreCase("true") ? 1 : 0; }
 	virtual String toJSON(bool bare = false, const char **excludes = 0) const { return value ? "true" : "false"; }
+	virtual String toString(const char **excludes = 0) const { return value ? "true" : "false"; }
 	BooleanConfigItem& operator=(const bool val) { value = val; return *this; }
 };
 
@@ -86,6 +88,7 @@ struct ByteConfigItem : public ConfigItem<byte> {
 
 	virtual void fromString(const String &s) { value = s.toInt(); }
 	virtual String toJSON(bool bare = false, const char **excludes = 0) const { return String(value); }
+	virtual String toString(const char **excludes = 0) const { return String(value); }
 	ByteConfigItem& operator=(const byte val) { value = val; return *this; }
 };
 
@@ -96,20 +99,33 @@ struct IntConfigItem : public ConfigItem<int> {
 
 	virtual void fromString(const String &s) { value = s.toInt(); }
 	virtual String toJSON(bool bare = false, const char **excludes = 0) const { return String(value); }
+	virtual String toString(const char **excludes = 0) const { return String(value); }
 	IntConfigItem& operator=(const int val) { value = val; return *this; }
+};
+
+struct FloatConfigItem : public ConfigItem<float> {
+	FloatConfigItem(const char *name, const float value)
+	: ConfigItem(name, sizeof(float), value)
+	{}
+
+	virtual void fromString(const String &s) { value = s.toFloat(); }
+	virtual String toJSON(bool bare = false, const char **excludes = 0) const { return String(value); }
+	virtual String toString(const char **excludes = 0) const { return String(value); }
+	FloatConfigItem& operator=(const float val) { value = val; return *this; }
 };
 
 struct StringConfigItem : public ConfigItem<String> {
 	StringConfigItem(const char *name, const byte maxSize, const String &value)
-	: ConfigItem(name, maxSize, value)
+	: ConfigItem(name, maxSize+1, value)
 	{}
 
-	virtual void fromString(const String &s) { value = s.substring(0, maxSize); }
+	virtual void fromString(const String &s) { value = s.substring(0, maxSize-1); }
 	virtual String toJSON(bool bare = false, const char **excludes = 0) const;
+	virtual String toString(const char **excludes = 0) const { return value; };
 	virtual void put() const;
 	virtual BaseConfigItem& get();
-	StringConfigItem& operator=(const String &val) { value = val.substring(0, maxSize); return *this; }
-};
+	StringConfigItem& operator=(const String &val) { value = val.substring(0, maxSize-1); return *this; }
+};              
 
 /**
  * TODO: parse JSON to populate all items!
@@ -127,6 +143,7 @@ struct CompositeConfigItem : public BaseConfigItem {
 
 	virtual void fromString(const String &s) {  }
 	virtual String toJSON(bool bare = false, const char **excludes = 0) const;
+	virtual String toString(const char **excludes = 0) const;
 	virtual void put() const;
 	virtual BaseConfigItem& get();
 	CompositeConfigItem& operator=(BaseConfigItem** val) { value = val; return *this; }
